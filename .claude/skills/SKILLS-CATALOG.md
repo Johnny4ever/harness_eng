@@ -11,7 +11,25 @@ Resolution order: native plugin skill > local skill > escalate to user.
 
 | Path | Category | Description | Intent tags | Used by playbooks |
 |---|---|---|---|---|
+| **BI** | | | | |
 | `bi/kpi-definition` | bi | Convert business language into precise KPI definitions with grain, filters, date logic, ownership | kpi, metric, definition, kpi dictionary, business measure | bi-dashboard, kpi-proof |
+| `bi/wireframe-ux` | bi | Translate KPIs into dashboard wireframe — pages, visuals, sample data, interactions | wireframe, ux, layout, dashboard design, chart, mockup | bi-dashboard |
+| `bi/dashboard-build` | bi | Implement approved wireframe as working dashboard — BI-layer calculations, visual specs | dashboard build, power bi, tableau, looker, dax, publish | bi-dashboard |
+| `bi/validation` | bi | Metric reconciliation, functional testing, UX acceptance — grades correctness before release | validation, qa, reconciliation, data accuracy, functional test | bi-dashboard |
+| **Data** | | | | |
+| `data/discovery` | data | Map KPIs to sources — grain, join path, history depth, refresh constraints, gap classification | discovery, source mapping, feasibility, grain, join, lineage | bi-dashboard, dbt-data-product, analysis-deep-dive |
+| `data/quality-profiling` | data | Profile sources across 6 dimensions — null rates, freshness, uniqueness, validity, remediation | data quality, profiling, completeness, null rate, freshness, fitness | bi-dashboard, dbt-data-product |
+| `data/semantic-modeling` | data | Design fact/dimension model — grain, relationships, KPI-to-model mapping | semantic model, dimensional model, fact table, dimension, star schema | bi-dashboard, dbt-data-product |
+| **dbt** | | | | |
+| `dbt/model-build` | dbt | Build staged/mart SQL models with dbt conventions, CTE patterns, schema.yml tests | sql, dbt, transformation, staging, mart, cte, model build | bi-dashboard, dbt-data-product |
+| **Generic** | | | | |
+| `generic/requirement-intake` | generic | Transform unstructured requests into structured requirement document | requirement, intake, brief, stakeholder request, scope | bi-dashboard, dbt-data-product, analysis-deep-dive |
+| `generic/stakeholder-alignment` | generic | Stabilise scope — MVP vs Phase 2, conflict resolution, decisions, signoffs | alignment, stakeholder, scope, mvp, prioritise, signoff | bi-dashboard, dbt-data-product |
+| `generic/documentation` | generic | Compile knowledge pack — KPI dictionary, dashboard guide, data lineage, runbook | documentation, knowledge pack, handover, runbook, lineage | bi-dashboard, dbt-data-product |
+| `generic/governance-check` | generic | Check enterprise KPI registry, enforce naming standards, flag reuse candidates | governance, reuse, naming, enterprise, duplicate, kpi registry | bi-dashboard, dbt-data-product |
+| `generic/source-enablement` | generic | Track and draft access requests, field contracts for blocked data sources | source enablement, access request, field contract, blocker | bi-dashboard, dbt-data-product |
+| `generic/release-checklist` | generic | Production go-live — environment, refresh, access, smoke test, rollback plan | release, deploy, production, publish, access, refresh, rollback | bi-dashboard, dbt-data-product |
+| **Eval** | | | | |
 | `eval/contract-definition` | eval | Write sprint contracts with observable binary acceptance criteria before a checkpoint | contract, criteria, acceptance, define done, before checkpoint | all |
 | `eval/output-grading` | eval | Grade generator deliverables PASS/FAIL with hard thresholds — skeptical by default | grade, evaluate, verdict, assess, quality check, pass fail | all |
 | `eval/feedback-synthesis` | eval | Convert FAIL verdict into specific actionable rework brief — no praise, no softening | feedback, rework, correction, fail, iteration | all |
@@ -72,19 +90,6 @@ When the generator needs a skill for a step:
 
 | Path | Phase | Status |
 |---|---|---|
-| `generic/requirement-intake` | Phase 4 | ⏳ pending |
-| `generic/stakeholder-alignment` | Phase 4 | ⏳ pending |
-| `generic/documentation` | Phase 4 | ⏳ pending |
-| `generic/governance-check` | Phase 4 | ⏳ pending |
-| `generic/source-enablement` | Phase 4 | ⏳ pending |
-| `generic/release-checklist` | Phase 4 | ⏳ pending |
-| `data/discovery` | Phase 4 | ⏳ pending |
-| `data/quality-profiling` | Phase 4 | ⏳ pending |
-| `data/semantic-modeling` | Phase 4 | ⏳ pending |
-| `bi/wireframe-ux` | Phase 4 | ⏳ pending |
-| `bi/dashboard-build` | Phase 4 | ⏳ pending |
-| `bi/validation` | Phase 4 | ⏳ pending |
-| `dbt/model-build` | Phase 6 | ⏳ pending |
 | `dbt/test-design` | Phase 6 | ⏳ pending |
 | `dbt/documentation` | Phase 6 | ⏳ pending |
 | `collect/ingest-confluence` | Phase 5 | ⏳ pending |
