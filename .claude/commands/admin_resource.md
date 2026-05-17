@@ -2,7 +2,7 @@
 
 You were invoked via the **`/admin_resource`** slash command.
 
-Follow `rules/resource-admin-agent.md`. Act as **`resource-orchestrator`** and run the full pipeline (ingest → catalog → versioner when needed).
+Route to the **`collector` agent** (`.claude/agents/collector.md`). The collector agent owns all artifact library operations — ingestion, cataloging, versioning, and search.
 
 ## Usage
 
@@ -12,87 +12,68 @@ If no sub-command is given, **default to `ingest`**.
 
 ## Sub-commands
 
-| Sub-command | Action |
+| Sub-command | Collector skill invoked | Action |
+|---|---|---|
+| `ingest <url>` | `collect/ingest-confluence` or `collect/ingest-jira` | Fetch and ingest a URL via MCP |
+| `ingest` (no URL) | `collect/ingest-adhoc` | Ingest pasted content from conversation |
+| `search <query>` | `collect/search` | Search artifact library; returns ranked results |
+| `status` | — | Read `artifacts/CATALOG.md` and summarize counts and recent artifacts |
+| `changelog` | — | Read `artifacts/CHANGELOG.md` and summarize recent changes |
+| `supersede <old_id> <new_id>` | `collect/version-supersede` | Mark old artifact as superseded by new |
+| `rebuild` | `collect/catalog-index` | Rebuild full CATALOG.md by re-reading all artifact front-matter |
+| `update` | `collect/ingest-confluence` or `collect/ingest-jira` | Re-check upstream sources for changes |
+
+## Routing Logic
+
+The collector agent follows this routing for ingest:
+
+```
+URL provided?
+  YES → contains "atlassian.net" or "confluence"? → collect/ingest-confluence
+      → contains "atlassian.net" and "browse/" or "issues/"? → collect/ingest-jira
+      → other URL → ask user: "Is this a Confluence page, Jira issue, or other source?"
+  NO  → content pasted in conversation? → collect/ingest-adhoc
+      → no URL, no content → ask user to provide URL or paste content
+```
+
+After every ingest:
+1. Run `collect/catalog-index` to update CATALOG.md and CHANGELOG.md
+2. Check if existing artifacts are superseded by new content; if so, run `collect/version-supersede`
+
+## Source Registry
+
+Before fetching from a URL source, the collector agent:
+1. Reads `artifacts/.source-registry.md` to check if the MCP server is registered
+2. If a new MCP appears, proposes an entry and waits for user confirmation before adding to registry
+
+## Artifact ID Sequencing
+
+artifact_ids follow the pattern `ART-YYYYMMDD-NNN` where NNN is a zero-padded 3-digit sequence number, incrementing from the highest NNN used today. If no artifacts exist for today's date, start at 001.
+
+To determine next ID: read CATALOG.md, find the highest artifact_id for today's date, add 1.
+
+## Update Sub-command
+
+Re-fetch a previously ingested source to check for changes.
+
+| Invocation | Behaviour |
 |---|---|
-| `ingest` | Ingest URL or pasted content; MCP discovery + `artifacts/.source-registry.md` before fetch |
-| `search` | Natural-language search over the artifact library |
-| `status` | Summarize `artifacts/CATALOG.md` |
-| `changelog` | Summarize `artifacts/CHANGELOG.md` |
-| `rebuild` | Full rebuild of `artifacts/CATALOG.md` via `resource-cataloger` |
-| `rollup` | Current-state roll-up to `artifacts/ROLLUP-current-state.md` via `resource-versioner` |
-| `update` | Check versioned sources (Confluence, Jira) for updates; see flags below |
+| `update` | Check all `confluence` and `jira` artifacts for upstream changes (no writes) |
+| `update <url>` | Check only artifacts matching this source URL |
+| `update --supersede ART-YYYYMMDD-NNN` | Re-ingest source, create new artifact, supersede old one |
 
-### Update sub-command
+Non-updateable sources (`adhoc`) are skipped.
 
-Check upstream sources for changes and optionally create superseding artifacts.
+## Output
 
-**Flags:**
+After any operation, report:
+- What was done (artifacts written, catalog updated, supersessions recorded)
+- File paths of all written/modified files
+- Total artifact count in the library
+- Any open questions or missing source descriptions that need user input
 
-| Flag | Behaviour |
-|------|-----------|
-| (none) or `--check` | Report which artifacts have upstream changes; no writes except `source_last_checked` |
-| `--supersede <artifact_id>` | Re-ingest source, create new artifact, mark old as superseded |
+## Integration with Other Agents
 
-**Scope:**
+Planner and generator agents call `/admin_resource search` to retrieve project context before planning. The collector agent's `artifacts/CATALOG.md` is the single source of truth for what knowledge has been ingested.
 
-| Invocation | Scope |
-|------------|-------|
-| `update` | Check all updateable artifacts (`confluence`, `jira`) |
-| `update <source-ref>` | Check only artifacts matching the URL or ticket ID |
-| `update --supersede ART-YYYYMMDD-NNN` | Supersede the specified artifact |
-
-**Examples:**
-
-```
-/admin_resource update                                    # check all
-/admin_resource update --check                            # same as above
-/admin_resource update https://...atlassian.net/.../123   # check specific source
-/admin_resource update --supersede ART-20260325-011       # supersede specific artifact
-```
-
-**Non-updateable sources:** `ad-hoc`, `teams-chat`, `meeting-transcript` are skipped.
-
-## Execution flows
-
-### Ingest flow
-
-1. Act as `resource-orchestrator` — read `artifacts/.source-registry.md`, scan `mcps/` for available MCP servers.
-2. If a new MCP appears vs. the registry, propose an entry and wait for user confirmation before adding.
-3. Match URL/content to `source_type` and `mcp_server`; fall back to `ad-hoc` when no MCP applies.
-4. Dispatch to `resource-ingestor` with source URL or text, `source_type`, MCP server name, and next `artifact_id` sequence.
-5. `resource-cataloger` runs after ingestion to update `CATALOG.md`, detect relationships, and flag duplicates.
-6. `resource-versioner` runs if cataloger detects supersession.
-7. Present summary: topics extracted, file paths, any detected relationships or supersessions.
-
-### Search flow
-
-1. Dispatch to `resource-search`.
-2. Return ranked results with file paths, summaries, and relevance explanations.
-
-### Status flow
-
-1. Read `artifacts/CATALOG.md` and summarize counts, recent sessions, and gaps.
-
-### Changelog flow
-
-1. Read `artifacts/CHANGELOG.md` and present a concise summary.
-
-### Rebuild flow
-
-1. Invoke `resource-cataloger` to rebuild the full catalog from scratch.
-2. Report artifact count and flag any files with missing or malformed front-matter.
-
-### Rollup flow
-
-1. Invoke `resource-versioner` to produce a current-state roll-up (only `status: current` artifacts).
-2. Written to `artifacts/ROLLUP-current-state.md` (overwritten each run).
-
-## Output structure
-
-All artifacts follow `rules/resource-admin-output-structure.md` — source-type subfolders under `artifacts/` with topic-based decomposition and structured YAML front-matter.
-
-## Integration with other agent groups
-
-BI agents and Project Intelligence agents can call `resource-search` to gather project context. The `bi-orchestrator` checks `artifacts/CATALOG.md` for relevant context when beginning a new project.
-
-Keep the user informed at each step (discovery, registry confirmation, ingest, catalog, versioning) and what happens next.
+Keep the user informed at each step: discovery → registry confirmation → ingest → catalog update → any supersession.
