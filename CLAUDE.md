@@ -11,6 +11,7 @@ A **reusable Claude Code agent harness template** built on the Anthropic planner
 | `/project` | `planner` | Full project lifecycle: classify intent → plan → generate → evaluate → retrospective |
 | `/admin_resource` | `collector` | Ingest, catalog, search, and version project knowledge artifacts |
 | `/run <playbook>` | `generator` | Direct playbook execution — power-user escape hatch, skips planner |
+| `/meta-learn` | `meta-learner` | Cross-project analyst — reads accumulated metrics, writes improvement proposals to `docs/meta/proposals/`. Manual only. |
 | `/spec` | *(inline)* | Scaffold a feature spec file and git branch from a short idea |
 
 To deploy this harness into a project, copy the `.claude/` folder into the project root.
@@ -19,14 +20,15 @@ To deploy this harness into a project, copy the `.claude/` folder into the proje
 
 ## Agent Architecture
 
-4 agents in `.claude/agents/`. Each is a Claude Code native agent with YAML front-matter (`name`, `description`, `model`) followed by a system prompt.
+5 agents in `.claude/agents/`. Each is a Claude Code native agent with YAML front-matter (`name`, `description`, `model`) followed by a system prompt.
 
 | Agent | Model | Role |
 |---|---|---|
 | `planner` | `claude-opus-4-7` | Classify intent, synthesize artifact library, select playbook, produce execution plan |
 | `generator` | `claude-sonnet-4-6` | Execute playbook steps, load skills, produce deliverables, self-check |
-| `evaluator` | `claude-opus-4-7` | Write sprint contracts, grade PASS/FAIL, synthesize feedback, run retrospective |
+| `evaluator` | `claude-opus-4-7` | Write sprint contracts, grade PASS/FAIL, synthesize feedback, run retrospective. Also appends to `SKILL.metrics.md` after each grading. |
 | `collector` | `claude-sonnet-4-6` | Ingest, catalog, search, and version project knowledge artifacts |
+| `meta-learner` | `claude-opus-4-7` | Cross-project analyst. Reads accumulated `SKILL.metrics.md`, retrospectives, and journals to find recurring failure patterns and write improvement proposals. Never writes to `.claude/`. Manual invocation only. |
 
 ### Harness Loop
 
@@ -102,6 +104,14 @@ artifacts/
   CHANGELOG.md              ← artifact evolution log
   .source-registry.md       ← MCP server → source_type mapping
   confluence/ jira/ ad-hoc/ ← topic-based artifact files (ART-YYYYMMDD-NNN-<slug>.md)
+
+docs/meta/                  ← meta-learner workspace (Phase 8)
+  proposals/                ← open proposals awaiting review
+    accepted/               ← proposals already applied via PR (archive)
+  rejected/                 ← rejected proposals with reasoning
+
+.claude/skills/<cat>/<skill>/SKILL.metrics.md   ← per-skill telemetry (evaluator appends)
+.claude/lessons/L-NNN-<slug>.md                 ← cross-skill anti-pattern library
 ```
 
 ---
@@ -116,7 +126,7 @@ artifacts/
 
 **Handoff blocks** — Files include `<!-- HANDOFF: ... -->` blocks with key findings, gaps, and `must_reads` for the next agent. Always read and honor these.
 
-**Context budgets** — Per-agent read limits: planner=5 files, generator=6, evaluator=4, collector=3. Skills are capped at 300 lines each.
+**Context budgets** — Per-agent read limits: planner=5 files, generator=6, evaluator=4, collector=3, meta-learner=12. Skills are capped at 300 lines each.
 
 **Versioning protocol** — Before overwriting any deliverable, archive to `versions/<filename>-v<N>-<YYYYMMDD>.md` and append to `DECISIONS.md`.
 
@@ -124,10 +134,29 @@ artifacts/
 
 ---
 
+## Meta-Learning Workflow (Phase 8)
+
+The harness includes a self-improvement loop that never silently mutates itself. The flow:
+
+1. **Passive collection** — Every time the evaluator grades a checkpoint, it appends one row to the relevant `SKILL.metrics.md` files. After enough projects, these files contain real performance data.
+2. **Manual analysis** — Run `/meta-learn`. The `meta-learner` agent reads metrics, retrospectives, and project journals across all projects. It writes 0–5 evidence-backed proposals to `docs/meta/proposals/`.
+3. **Human review** — You read each proposal and either accept (open a PR applying the diff), reject (move to `docs/meta/rejected/`), or defer (leave the file in place).
+4. **Regression guard** — Accepted proposals get tagged with a `learning_id`. The next 3 retrospectives auto-verify whether the change met its Expected Outcome. If contradicted, the next `/meta-learn` run files a revert proposal.
+
+The meta-learner **never writes to `.claude/`**. All harness changes go through normal git PRs reviewed by you. See:
+- `.claude/rules/skill-metrics-protocol.md` — telemetry schema
+- `.claude/rules/lessons-learned-protocol.md` — institutional memory
+- `.claude/rules/proposal-protocol.md` — proposal schema and lifecycle
+- `.claude/lessons/` — cross-skill anti-pattern library
+- `MIGRATION-PHASE-8.md` — what changed in Phase 8, rollback path
+
+---
+
 ## Modifying the Harness
 
-- **Add a skill**: create `.claude/skills/<category>/<name>/SKILL.md` following the YAML front-matter schema, then add a row to `SKILLS-CATALOG.md`.
+- **Add a skill**: create `.claude/skills/<category>/<name>/SKILL.md` following the YAML front-matter schema, then add a row to `SKILLS-CATALOG.md`. Include an empty `## Lessons Learned` section at the end.
 - **Add a playbook**: create `.claude/playbooks/<name>.md` with steps, checkpoints, and parallelisation rules following the existing playbook pattern.
+- **Add a lesson**: if cross-skill, create `.claude/lessons/L-NNN-<slug>.md`. If skill-specific, append a bullet to that skill's `## Lessons Learned` section. Always assign a unique `learning_id`.
 - **Change agent behavior**: edit `.claude/agents/<name>.md` system prompt.
 - **Change model tier**: edit the `model:` front-matter field.
 - **Change output paths or schemas**: edit the relevant `.claude/rules/<name>.md` file.
