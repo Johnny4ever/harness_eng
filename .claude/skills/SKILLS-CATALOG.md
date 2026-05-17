@@ -22,6 +22,8 @@ Resolution order: native plugin skill > local skill > escalate to user.
 | `data/semantic-modeling` | data | Design fact/dimension model — grain, relationships, KPI-to-model mapping | semantic model, dimensional model, fact table, dimension, star schema | bi-dashboard, dbt-data-product |
 | **dbt** | | | | |
 | `dbt/model-build` | dbt | Build staged/mart SQL models with dbt conventions, CTE patterns, schema.yml tests | sql, dbt, transformation, staging, mart, cte, model build | bi-dashboard, dbt-data-product |
+| `dbt/test-design` | dbt | Write dbt schema.yml tests (not_null/unique/accepted_values/relationships) and singular SQL tests for business rules | dbt, test, testing, schema.yml, data quality, test coverage, singular test | dbt-data-product |
+| `dbt/documentation` | dbt | Write dbt model documentation — schema.yml descriptions, model catalogue, data dictionary for downstream consumers | dbt, documentation, data dictionary, model catalogue, schema.yml, lineage | dbt-data-product |
 | **Generic** | | | | |
 | `generic/requirement-intake` | generic | Transform unstructured requests into structured requirement document | requirement, intake, brief, stakeholder request, scope | bi-dashboard, dbt-data-product, analysis-deep-dive |
 | `generic/stakeholder-alignment` | generic | Stabilise scope — MVP vs Phase 2, conflict resolution, decisions, signoffs | alignment, stakeholder, scope, mvp, prioritise, signoff | bi-dashboard, dbt-data-product |
@@ -95,7 +97,4 @@ When the generator needs a skill for a step:
 
 ## Skills Pending (added in future phases)
 
-| Path | Phase | Status |
-|---|---|---|
-| `dbt/test-design` | Phase 6 | ⏳ pending |
-| `dbt/documentation` | Phase 6 | ⏳ pending |
+All planned skills through Phase 6 are complete. New skills are added here when scoped.
