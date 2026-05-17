@@ -93,15 +93,24 @@ Each playbook declares:
 
 ### 1.4 Commands
 
-Slash commands stay user-facing and route to one of the 4 agents:
+**Principle: the user describes intent; the harness picks the playbook and loads skills.** Users never name a skill or playbook in normal use. Adding a domain-specific command for every playbook (`/bi_agent`, `/dbt_agent`, ...) would defeat the entire restructure.
+
+Final command surface after migration:
 
 | Command | Routes to | Behavior |
 |---|---|---|
-| `/project` | `planner` | Full lifecycle: pick playbook → produce strategy → hand off to generator + evaluator loop |
-| `/admin_resource` | `collector` | Ingest, catalog, search, version |
-| `/bi_agent` | `generator` (fallback) | Direct run with `bi-dashboard.md` playbook, raw context, skipping planner |
-| `/run <playbook>` | `generator` (fallback) | Generic version of `/bi_agent` — run any playbook directly |
-| `/spec` | inline | Unchanged — feature spec scaffolding |
+| `/project <intent>` | `planner` | **Primary entry.** Planner classifies intent, picks playbook, hands off to generator + evaluator loop. |
+| `/admin_resource <sub-cmd>` | `collector` | Unchanged sub-commands: ingest, catalog, search, version. |
+| `/spec <idea>` | inline | Unchanged — feature spec scaffolding. |
+| `/run <playbook> <context>` | `generator` (escape hatch) | Power-user override: skip planner, force a specific playbook. Used for: testing new playbooks during dev, overriding when intent classification is ambiguous, raw-context invocations. **Not the recommended path.** |
+
+**Deprecated and removed at Phase 7:**
+
+| Command | Replacement |
+|---|---|
+| ~~`/bi_agent`~~ | `/project <intent>` (planner auto-routes to `bi-dashboard` playbook). For explicit override: `/run bi-dashboard <context>`. |
+
+Removing `/bi_agent` is a deliberate breaking change. Users with muscle memory will get a "command not found" message during Phase 7 — that's acceptable because the replacement (`/project`) is already the recommended path today and accepts the same natural-language input.
 
 ### 1.5 Rules (harness invariants)
 
@@ -182,17 +191,22 @@ Shared protocols promoted to top-level `rules/` (not in any agent or skill):
 
 | File | Change |
 |---|---|
-| `.claude/commands/project.md` | Route to `planner` only; sub-commands map to planner phases |
-| `.claude/commands/bi_agent.md` | Route to `generator` with `bi-dashboard.md` playbook |
+| `.claude/commands/project.md` | Route to `planner` only; sub-commands map to planner phases. Add playbook auto-selection from intent. |
 | `.claude/commands/admin_resource.md` | Route to `collector` |
 | `.claude/commands/spec.md` | Unchanged (inline command) |
 | `.claude/settings.local.json` | Clean up `auto_trader`-specific absolute paths |
 
-### 2.4 Add new command
+### 2.4 Delete
+
+| File | Reason |
+|---|---|
+| `.claude/commands/bi_agent.md` | Deprecated at Phase 7. Replaced by smart routing through `/project`. Users can still force the BI playbook via `/run bi-dashboard <context>`. |
+
+### 2.5 Add new command
 
 | File | Purpose |
 |---|---|
-| `.claude/commands/run.md` | Generic playbook runner — `/run <playbook-name> <context>` |
+| `.claude/commands/run.md` | Power-user playbook runner — `/run <playbook-name> <context>`. Escape hatch only, not the recommended entry. |
 
 ---
 
@@ -423,11 +437,21 @@ Build `playbooks/dbt-data-product.md` and the 3 new dbt skills. Run a sample dbt
 
 **Exit criteria:** Working dbt model produced via `/run dbt-data-product`.
 
-### Phase 7 — Retire old agents (½ day)
+### Phase 7 — Retire old agents and deprecate `/bi_agent` (½ day)
 
-Delete the 25 old agent files. Remove `experimental: true` flags. Update `CLAUDE.md`. Push to `harness_eng`.
+- Delete the 25 old agent files.
+- Delete `.claude/commands/bi_agent.md`.
+- Remove `experimental: true` flags from the 4 new agents.
+- Update `CLAUDE.md` to reflect the new command surface and architecture.
+- Add a `MIGRATION-NOTES.md` to the repo root with the `/bi_agent` → `/project` deprecation note for anyone with muscle memory.
+- Push to `harness_eng`.
 
-**Exit criteria:** `.claude/agents/` contains exactly 4 files. Old `/bi_agent`, `/project`, `/admin_resource` commands still work, routed through new harness.
+**Exit criteria:**
+- `.claude/agents/` contains exactly 4 files (`collector`, `planner`, `generator`, `evaluator`)
+- `.claude/commands/` contains exactly 4 files (`project`, `admin_resource`, `spec`, `run`)
+- `/project` and `/admin_resource` route through the new harness with identical (or better) results to the old harness on benchmark prompts
+- `/bi_agent` returns "command not found" — verified
+- `/run bi-dashboard <context>` produces equivalent output to the old `/bi_agent <context>`
 
 ---
 
