@@ -93,3 +93,11 @@ Platform: <name>  |  Refresh: <frequency>
 - [ ] Every `[OPEN]` field has a corresponding assumption or clarification request
 - [ ] Out of scope section is non-empty
 - [ ] Success criteria is stated in stakeholder's language, not technical language
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

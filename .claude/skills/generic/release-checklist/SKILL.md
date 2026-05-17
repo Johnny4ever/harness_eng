@@ -114,3 +114,11 @@ First manual refresh: ✅ / ❌
 - [ ] Refresh failure alerting has a named recipient
 - [ ] Access validated as end user (not admin)
 - [ ] Rollback plan is actionable (not "revert the changes")
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

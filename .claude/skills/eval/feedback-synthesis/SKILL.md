@@ -104,3 +104,11 @@ Iteration <N> of <max_iterations>. **<iterations_remaining> iteration(s) remaini
 - [ ] No passing criteria are mentioned except in the "do not change" list
 - [ ] No praise, no encouragement, no qualifiers like "great work on X but..."
 - [ ] Iteration budget is correctly calculated and stated
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

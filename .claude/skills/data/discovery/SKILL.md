@@ -98,3 +98,11 @@ gap_kpis: <N>
 - [ ] Every gap has a gap reason (not just "no data found")
 - [ ] History depth checked against the dashboard's required date range
 - [ ] Source enablement table populated for all ⚠️ and ❌ items
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

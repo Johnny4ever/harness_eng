@@ -109,3 +109,11 @@ not_fit_tables: <N>
 - [ ] Every ⚠️ table has a specific remediation instruction
 - [ ] Every ❌ table has a stated impact on the KPI it supports
 - [ ] Freshness checked against the dashboard's required refresh frequency
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

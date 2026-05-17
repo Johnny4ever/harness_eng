@@ -116,3 +116,11 @@ dimension_tables: <N>
 - [ ] Schema diagram shows all join relationships
 - [ ] Every transformation note from the quality report is referenced in the relevant fact table
 - [ ] SCD type declared for every dimension
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

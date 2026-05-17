@@ -90,3 +90,11 @@ Catalog updated: <N> artifacts added. Total: <M> artifacts indexed.
 - [ ] CHANGELOG.md has one row per new artifact with `Added` action
 - [ ] Table is sorted newest-first in CATALOG.md
 - [ ] Did NOT read full artifact bodies (front-matter only)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

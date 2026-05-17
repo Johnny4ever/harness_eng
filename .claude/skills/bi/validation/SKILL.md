@@ -106,3 +106,11 @@ overall: PASS | FAIL
 - [ ] All drill-throughs tested
 - [ ] Every wireframe page compared to built dashboard
 - [ ] FAIL vs WARNING distinction applied (WARNING does not block release)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

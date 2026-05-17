@@ -93,3 +93,11 @@ blocking_items: <N>
 - [ ] Every item has a draft request message ready to send
 - [ ] Impact on delivery documented for all blocking items
 - [ ] Non-blocking items clearly separated from blocking ones
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

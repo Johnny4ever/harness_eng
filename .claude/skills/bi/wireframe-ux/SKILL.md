@@ -108,3 +108,11 @@ figma_url: <url or "not available">
 - [ ] Filter scope (global vs local) specified for every filter
 - [ ] No visual designed for a ❌ gap KPI from discovery
 - [ ] UX risks section present (even if empty — note "no risks identified")
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

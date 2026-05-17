@@ -116,3 +116,11 @@ Example: `ART-20260517-005-stakeholder-kpi-decisions-email.md`
 - [ ] `status: current` on all new artifacts
 - [ ] Conversational noise stripped; signal preserved
 - [ ] File written to `artifacts/ad-hoc/` (not any other folder)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

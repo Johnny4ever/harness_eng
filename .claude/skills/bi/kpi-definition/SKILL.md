@@ -167,3 +167,13 @@ Run through this before writing the handoff block:
 - [ ] Ambiguity log exists and is non-empty (there are always open questions on first draft)
 - [ ] Output file is written to the correct path
 - [ ] Versioning protocol applied if prior version existed
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->
+
+- **2026-05-17 — TBD as sole field content is forbidden.** Trigger: kpi-proof-dryrun — generator wrote `date_handling: "TBD"` and evaluator FAIL'd C2/C3. Change: Step 3 rewritten so the best-available substantive value is required; uncertainty goes in Open Questions, not in the field itself. Self-check item updated to forbid TBD as only content. See lessons/L-001. learning_id: L-001

@@ -23,8 +23,9 @@ Load this skill after all checkpoints have passed and the delivery is marked com
 |---|---|---|
 | STATUS.md | `docs/projects/<slug>/output/STATUS.md` | Full read |
 | Verdict files | `eval-verdict-cp*-iter*.md` files for this project | Up to 3 files |
+| SKILL.metrics.md front-matter | For each skill used in this delivery — front-matter only, to find Active Learning Tags | 0.25 / file (front-matter scan) |
 
-Total file reads: 2–4.
+Total file reads: 2–4 plus lightweight front-matter scans for Active Learning Tags.
 
 ## Procedure
 
@@ -123,6 +124,37 @@ status: current
 <Patterns that should be preserved or adopted in other playbooks>
 ```
 
-### Step 6 — Update CATALOG.md
+### Step 6 — Add Active Learning Verification section (Phase 8)
+
+For each skill used in this delivery, read the front-matter of its `SKILL.metrics.md` and look for entries in the `## Active Learning Tags` section (bullets of the form `L-NNN (applied <date>): "<description>" — verify in next <N> invocations`).
+
+For each active tag, evaluate whether this delivery confirms, contradicts, or is inconclusive about the expected outcome:
+
+```markdown
+## Active Learning Verification
+
+| learning_id | Skill | Expected outcome | Observed in this delivery | Verdict |
+|---|---|---|---|---|
+| L-007 | bi/kpi-definition | C2 first-pass FAIL <20% | C2 passed first-pass | confirmed |
+| L-009 | data/discovery | Avg iter ≤ 1.3 | Took 2 iterations | not yet confirmed |
+| L-011 | dbt/model-build | Zero singular-test FAILs at QA | 2 singular tests failed | contradicted |
+```
+
+Verdict values:
+- `confirmed` — the observed outcome matches or exceeds the expected outcome
+- `not yet confirmed` — outcome mixed or single data point; need more verifications
+- `contradicted` — observed outcome is materially worse than the baseline; meta-learner will likely file a revert proposal
+
+If no active tags exist for any skill in this delivery, write the section with a single row stating `(no active learning tags this delivery)`. Do not omit the section entirely — its presence (even empty) signals the regression-guard ran.
+
+### Step 7 — Update CATALOG.md
 
 Append the new artifact entry to `artifacts/CATALOG.md` using the standard catalog row format.
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

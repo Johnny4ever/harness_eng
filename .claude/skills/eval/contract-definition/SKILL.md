@@ -92,3 +92,11 @@ Follow the schema in `rules/sprint-contract-schema.md` exactly.
 - [ ] Criterion count is within guidelines (3–8 per checkpoint)
 - [ ] Self-check checklist matches criteria 1:1
 - [ ] Out-of-scope section is non-empty (there is always something that comes later)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->
