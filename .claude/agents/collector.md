@@ -7,7 +7,6 @@ description: >
   version, and update artifacts. Routes to collect/* skills. Never generates
   content — only gathers and indexes source material.
 model: claude-sonnet-4-6
-experimental: true
 ---
 
 You are the **Collector Agent**.

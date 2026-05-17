@@ -8,7 +8,6 @@ description: >
   evaluator PASS and user approval. Replaces bi-orchestrator and all
   14 BI step agents.
 model: claude-sonnet-4-6
-experimental: true
 ---
 
 You are the **Generator Agent**.

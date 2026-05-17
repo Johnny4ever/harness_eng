@@ -7,7 +7,6 @@ description: >
   hands off to generator + evaluator. Does not execute deliverable work.
   Replaces project-dispatcher, project-synthesizer, and project-strategist.
 model: claude-opus-4-7
-experimental: true
 ---
 
 You are the **Planner Agent**.

@@ -4,142 +4,136 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repository Is
 
-A **reusable Claude Code agent harness template**. There is no application code — the entire repo is a `.claude/` folder containing agent definitions, slash commands, and permissions that can be dropped into any project to enable three slash-command-driven workflows:
+A **reusable Claude Code agent harness template** built on the Anthropic planner/generator/evaluator pattern. There is no application code — the entire repo is a `.claude/` folder containing agent definitions, slash commands, playbooks, and skills that can be dropped into any project to enable structured analytical and data engineering workflows.
 
 | Command | Entry agent | What it does |
 |---|---|---|
-| `/project` | `project-dispatcher` | Full project lifecycle: ingest knowledge → synthesize → plan → execute → review |
-| `/bi_agent` | `bi-orchestrator` | End-to-end BI dashboard delivery (14 steps, 3 human-gated checkpoints) |
-| `/admin_resource` | `resource-orchestrator` | Ingest, catalog, search, and version project knowledge artifacts |
+| `/project` | `planner` | Full project lifecycle: classify intent → plan → generate → evaluate → retrospective |
+| `/admin_resource` | `collector` | Ingest, catalog, search, and version project knowledge artifacts |
+| `/run <playbook>` | `generator` | Direct playbook execution — power-user escape hatch, skips planner |
 | `/spec` | *(inline)* | Scaffold a feature spec file and git branch from a short idea |
 
-To deploy this harness into a project, copy the `.claude/` folder into the project root. No package installation or build step required.
+To deploy this harness into a project, copy the `.claude/` folder into the project root.
 
 ---
 
 ## Agent Architecture
 
-All 25 agents live in `.claude/agents/`. Each file is a Claude Code native agent with YAML front-matter (`name`, `description`, `model`) followed by a system prompt. Model tier is assigned by role:
+4 agents in `.claude/agents/`. Each is a Claude Code native agent with YAML front-matter (`name`, `description`, `model`) followed by a system prompt.
 
-| Tier | Model | Used for |
+| Agent | Model | Role |
 |---|---|---|
-| Opus | `claude-opus-4-7` | Orchestrators and planners that must reason across many artifacts |
-| Sonnet | `claude-sonnet-4-6` | Builders, writers, SQL, QA, and documentation agents |
-| Haiku | `claude-haiku-4-5-20251001` | High-frequency lookup agents (search, registry) |
+| `planner` | `claude-opus-4-7` | Classify intent, synthesize artifact library, select playbook, produce execution plan |
+| `generator` | `claude-sonnet-4-6` | Execute playbook steps, load skills, produce deliverables, self-check |
+| `evaluator` | `claude-opus-4-7` | Write sprint contracts, grade PASS/FAIL, synthesize feedback, run retrospective |
+| `collector` | `claude-sonnet-4-6` | Ingest, catalog, search, and version project knowledge artifacts |
 
-### Group 1 — Project Intelligence (4 agents)
-
-Single entry point: `project-dispatcher` classifies intent and routes; never call specialist agents directly.
-
-```
-project-dispatcher (Opus)
-  ├─ project-synthesizer (Opus)   reads artifact library → produces synthesis.md
-  ├─ project-strategist  (Opus)   reads synthesis → produces strategy.md + journal
-  └─ project-reviewer    (Sonnet) reads executor output → produces lesson-learned artifacts
-```
-
-The dispatcher reads at most 2 files per invocation (context budget). It consults `docs/.cache-manifest.md` and the routing section of `docs/projects/<slug>/project-journal.md` to decide whether synthesis is needed or can be skipped.
-
-### Group 2 — BI Agents (15 agents)
-
-`bi-orchestrator` drives a **14-step, 3-checkpoint** pipeline with mandatory user-approval gates between checkpoints:
+### Harness Loop
 
 ```
-Checkpoint 1 (user reviews before proceeding)
-  01  bi-requirement-intake
-  02  bi-kpi-metric-definition
-  03  bi-stakeholder-alignment
+/project → planner classifies intent
+         → planner selects playbook + produces strategy.md
+         → human gate: user approves plan
 
-Checkpoint 2 (user reviews before proceeding)
-  04  bi-data-discovery
-  05  bi-data-quality-profiling
-  06  bi-semantic-model-design
-  07  bi-transformation-sql-build
+For each checkpoint in the playbook:
+  evaluator writes sprint contract (observable PASS/FAIL criteria)
+  generator executes steps → produces deliverables
+  evaluator grades: PASS or FAIL
+    FAIL → evaluator writes feedback brief → generator reworks → repeat (max 5 iterations)
+    PASS → human gate: user approves before next checkpoint
 
-Checkpoint 3 (user reviews before proceeding)
-  08  bi-wireframe-ux
-
-Post-checkpoint (runs when user is ready)
-  09  bi-build
-  10  bi-validation-qa
-  11  bi-documentation-knowledge
-  12  bi-release-deployment
-
-Cross-cutting (invoked at any stage when needed)
-  13  bi-source-enablement    — unblocks data access gaps
-  14  bi-governance-reuse     — enforces enterprise KPI/naming standards
+After final checkpoint:
+  evaluator writes retrospective → stored to artifacts/ad-hoc/
 ```
 
-Steps 04 and 02 can run in parallel after step 01 completes. The orchestrator must not advance past a checkpoint until the user explicitly approves.
+Context resets between checkpoints via structured HANDOFF blocks (`<!-- HANDOFF: ... -->`).
 
-### Group 3 — Resource Admin (6 agents)
+---
 
-`resource-orchestrator` routes all `/admin_resource` sub-commands:
+## Skills
 
-```
-resource-orchestrator (Opus)
-  ├─ resource-registry   (Haiku)  — MCP server discovery + artifact ID sequencing
-  ├─ resource-ingestor   (Sonnet) — decomposes source content into topic-based artifact files
-  ├─ resource-cataloger  (Sonnet) — maintains CATALOG.md, detects relationships/duplicates
-  ├─ resource-search     (Haiku)  — natural-language search over the artifact library
-  └─ resource-versioner  (Sonnet) — manages supersession chains + CHANGELOG
-```
+28 composable skills in `.claude/skills/`, organized by domain. Skills are NOT invoked by users — they are loaded by the generator (and collector) when a playbook step requires them.
+
+The generator finds skills via **`.claude/skills/SKILLS-CATALOG.md`** — a single lookup table. It never globs SKILL.md files directly.
+
+Resolution order: native Claude Code plugin skill → local `.claude/skills/<path>/SKILL.md` → escalate to user.
+
+### Skill categories
+
+| Category | Skills |
+|---|---|
+| `bi/` | kpi-definition, wireframe-ux, dashboard-build, validation |
+| `data/` | discovery, quality-profiling, semantic-modeling |
+| `dbt/` | model-build, test-design, documentation |
+| `generic/` | requirement-intake, stakeholder-alignment, documentation, governance-check, source-enablement, release-checklist |
+| `eval/` | contract-definition, output-grading, feedback-synthesis, retrospective |
+| `collect/` | ingest-confluence, ingest-jira, ingest-adhoc, catalog-index, version-supersede, search |
+
+---
+
+## Playbooks
+
+3 playbooks in `.claude/playbooks/`. A playbook is a recipe — it defines step sequence, parallelisation, checkpoint gates, cross-cutting skills, and output folder structure for a domain.
+
+| Playbook | Steps | Checkpoints | Use when |
+|---|---|---|---|
+| `bi-dashboard` | 12 | 4 | Delivering an end-to-end BI dashboard (req → wireframe → build → QA → release) |
+| `dbt-data-product` | 10 | 3 | Delivering a curated dbt mart layer (no BI layer) |
+| `kpi-proof` | 1 | 1 | Lightweight: prove the harness loop works with a single KPI definition step |
 
 ---
 
 ## State Persistence
 
-All state is stored as Markdown files — no database. These are the key files to read when picking up a project mid-flight:
+All state is stored as Markdown files — no database. Key files to read when picking up a project mid-flight:
 
 ```
-docs/
-  .cache-manifest.md              ← synthesis cache validity (read by dispatcher)
-  projects/<slug>/
-    project-journal.md            ← canonical project state — read this first
-    DECISIONS.md                  ← evolution log (every version bump appended here)
-    synthesis/synthesis.md        ← latest artifact synthesis
-    strategy/strategy.md          ← approved execution plan
-    output/                       ← BI deliverables, step-numbered subfolders 01–14
+docs/projects/<slug>/
+  project-journal.md        ← canonical project state (planner writes, reads on every invocation)
+  DECISIONS.md              ← version evolution log
+  output/                   ← deliverables in step-numbered subfolders (01-requirement/, 02-kpi/, ...)
+  output/STATUS.md          ← current step, checkpoint, iteration, blockers
+  output/sprint-contract-cp<N>.md
+  output/eval-verdict-cp<N>-iter<M>.md
+  output/eval-feedback-cp<N>-iter<M>.md
 
 artifacts/
-  CATALOG.md                      ← master knowledge index
-  CHANGELOG.md                    ← artifact evolution log
-  .source-registry.md             ← MCP server → source_type mapping
-  confluence/ jira/ teams-chat/ meeting-transcript/ ad-hoc/
+  CATALOG.md                ← master knowledge index (collector maintains)
+  CHANGELOG.md              ← artifact evolution log
+  .source-registry.md       ← MCP server → source_type mapping
+  confluence/ jira/ ad-hoc/ ← topic-based artifact files (ART-YYYYMMDD-NNN-<slug>.md)
 ```
 
 ---
 
 ## Key Operational Concepts
 
-**Human gates** — Both `/project` and `/bi_agent` pause at defined checkpoints and must not auto-advance. The orchestrator presents artifacts for review and waits for explicit user approval.
+**Human gates** — Every checkpoint requires explicit user approval before the generator advances. The planner presents a summary of what was produced and stops.
 
-**Handoff blocks** — Deliverable files include an HTML comment block (`<!-- HANDOFF: ... -->`) with key findings, gaps, and `must_reads` for the next agent. Always read and honor these before continuing from a prior artifact.
+**Sprint contracts** — The evaluator writes observable, binary PASS/FAIL criteria *before* the generator produces any output for a checkpoint. This makes grading unambiguous.
 
-**Context budgets** — Each agent spec defines how many files it may read per invocation. Respect these limits; they exist to stay within token windows.
+**Hard-threshold grading** — The evaluator defaults to FAIL. Partial completion = FAIL. Placeholders (TBD as only field content) = FAIL. Effort is not weighted.
 
-**Universal versioning protocol** — Before overwriting any deliverable, archive it to a `versions/` subfolder and append a one-line entry to `DECISIONS.md`. A `VERSION-INDEX.md` tracks all versions. Every step agent performs its own version bump — the orchestrator verifies it happened.
+**Handoff blocks** — Files include `<!-- HANDOFF: ... -->` blocks with key findings, gaps, and `must_reads` for the next agent. Always read and honor these.
 
-**Material vs. non-material changes** — Agents must distinguish material changes (new data sources, shifted KPIs, scope changes) that require downstream re-runs from editorial changes that do not.
+**Context budgets** — Per-agent read limits: planner=5 files, generator=6, evaluator=4, collector=3. Skills are capped at 300 lines each.
 
-**Iteration budget** — `/project execute` is capped at 3 iterations. If a project exceeds budget, escalate to the user rather than continuing silently.
+**Versioning protocol** — Before overwriting any deliverable, archive to `versions/<filename>-v<N>-<YYYYMMDD>.md` and append to `DECISIONS.md`.
+
+**Iteration budget** — Max 5 rework cycles per checkpoint. On budget exhaustion, the generator escalates to the user rather than continuing silently.
 
 ---
 
-## Modifying Agents
+## Modifying the Harness
 
-Each agent file follows a consistent structure:
-```
-role definition → role boundaries → inputs → responsibilities → output schema → success criteria
-```
-
-- To change **what an agent does**: edit its `.claude/agents/<name>.md` system prompt.
-- To change **when an agent is invoked**: edit its `description:` field — Claude Code uses this for automatic invocation matching.
-- To change **output file paths or schemas**: update the relevant `rules/` file referenced in the agent prompt (e.g. `rules/bi-output-structure.md`). The rules files are not in this template — they live in the consuming project.
-- To change **model tier**: edit the `model:` front-matter field using the tiers above.
+- **Add a skill**: create `.claude/skills/<category>/<name>/SKILL.md` following the YAML front-matter schema, then add a row to `SKILLS-CATALOG.md`.
+- **Add a playbook**: create `.claude/playbooks/<name>.md` with steps, checkpoints, and parallelisation rules following the existing playbook pattern.
+- **Change agent behavior**: edit `.claude/agents/<name>.md` system prompt.
+- **Change model tier**: edit the `model:` front-matter field.
+- **Change output paths or schemas**: edit the relevant `.claude/rules/<name>.md` file.
 
 ---
 
 ## MCP Integration
 
-`resource-registry` dynamically discovers available MCP servers on each ingestion run and maps source URLs to server names in `artifacts/.source-registry.md`. Supported source types: `confluence`, `jira`, `teams-chat`, `meeting-transcript`, `ad-hoc`. Non-updateable types (`ad-hoc`, `teams-chat`, `meeting-transcript`) are skipped by `/admin_resource update`.
+The collector agent discovers available MCP servers on each ingestion run. Supported source types: `confluence`, `jira`, `ad-hoc`. Non-updateable types (`ad-hoc`) are skipped by `/admin_resource update`. The MCP → source_type mapping is persisted in `artifacts/.source-registry.md`.
