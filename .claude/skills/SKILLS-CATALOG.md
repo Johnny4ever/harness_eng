@@ -34,6 +34,13 @@ Resolution order: native plugin skill > local skill > escalate to user.
 | `eval/output-grading` | eval | Grade generator deliverables PASS/FAIL with hard thresholds — skeptical by default | grade, evaluate, verdict, assess, quality check, pass fail | all |
 | `eval/feedback-synthesis` | eval | Convert FAIL verdict into specific actionable rework brief — no praise, no softening | feedback, rework, correction, fail, iteration | all |
 | `eval/retrospective` | eval | Post-delivery lesson-learned artifact covering iteration patterns and improvement recommendations | retrospective, lesson learned, review, post-delivery, improve | all |
+| **Collect** | | | | |
+| `collect/ingest-confluence` | collect | Fetch a Confluence page via MCP and decompose into topic-based artifact files with YAML front-matter | confluence, ingest, wiki, page, knowledge, documentation | all — via /admin_resource ingest |
+| `collect/ingest-jira` | collect | Fetch Jira issues or JQL results via MCP and decompose into topic-based artifact files | jira, ingest, ticket, issue, epic, story, requirements | all — via /admin_resource ingest |
+| `collect/ingest-adhoc` | collect | Decompose pasted content (emails, Slack, meeting notes, docs) into artifact files | adhoc, ingest, paste, email, slack, meeting notes | all — via /admin_resource ingest |
+| `collect/catalog-index` | collect | Update CATALOG.md and CHANGELOG.md after new artifacts are written | catalog, index, catalog-index, artifact registry, changelog | all — via /admin_resource ingest |
+| `collect/version-supersede` | collect | Mark an older artifact as superseded when new content replaces it | supersede, version, artifact version, replace, changelog | all — via /admin_resource ingest |
+| `collect/search` | collect | Search the artifact library by keyword, topic, source type, or artifact_id — reads CATALOG.md only | search, find, lookup, artifact search, catalog search | all — via /admin_resource search |
 
 ---
 
@@ -92,9 +99,3 @@ When the generator needs a skill for a step:
 |---|---|---|
 | `dbt/test-design` | Phase 6 | ⏳ pending |
 | `dbt/documentation` | Phase 6 | ⏳ pending |
-| `collect/ingest-confluence` | Phase 5 | ⏳ pending |
-| `collect/ingest-jira` | Phase 5 | ⏳ pending |
-| `collect/ingest-adhoc` | Phase 5 | ⏳ pending |
-| `collect/catalog-index` | Phase 5 | ⏳ pending |
-| `collect/version-supersede` | Phase 5 | ⏳ pending |
-| `collect/search` | Phase 5 | ⏳ pending |
