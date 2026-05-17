@@ -26,6 +26,7 @@ Skills are reusable, opinionated capability files. Folder layout:
 
 ```
 .claude/skills/
+  SKILLS-CATALOG.md       ← fast-lookup index, hybrid resolution registry, reverse index
   bi/
     kpi-definition/
     wireframe-ux/
@@ -64,11 +65,29 @@ Each skill folder contains:
 
 ```
 <skill-name>/
-  SKILL.md              ← when to use, inputs, outputs, role boundaries, step-by-step procedure
+  SKILL.md              ← YAML front-matter + procedure body
   templates/            ← deliverable templates (optional)
   examples/             ← good and bad output examples (optional)
   checklist.md          ← self-eval checklist run before handoff (optional)
 ```
+
+#### Skill catalog (`SKILLS-CATALOG.md`)
+
+The catalog is the **single lookup point** the generator reads before invoking any skill. Without it, the generator would glob ~28 SKILL.md files and parse their front-matter on every dispatch — too expensive on context budget.
+
+The catalog has three sections:
+
+1. **Local skills table** — every skill under `.claude/skills/<category>/<name>/`, with columns: path, category, purpose, trigger keywords, playbooks that consume it.
+2. **Native skills table** — Claude Code native plugin skills (e.g., `anthropic-skills:docx`, `engineering:documentation`, `atlassian:capture-tasks-from-meeting-notes`) that overlap or complement local skills.
+3. **Resolution algorithm** — explicit precedence rules for the hybrid native+local lookup (Decision 1).
+
+**Resolution order at runtime:**
+1. If the playbook step names a skill explicitly (path or native name) → use it
+2. Else match step's `intent_tags` against the catalog's Trigger keywords column
+3. If both native and local match, default to native unless playbook overrides
+4. If no match, escalate to user
+
+**Maintenance protocol:** any commit that adds, renames, or removes a skill MUST update `SKILLS-CATALOG.md` in the same commit. Mirrors how `artifacts/CATALOG.md` is maintained for artifacts. Phase 4 builds the initial catalog; subsequent phases keep it in sync.
 
 ### 1.3 Playbooks (the recipe)
 
@@ -184,8 +203,24 @@ Shared protocols promoted to top-level `rules/` (not in any agent or skill):
   output-structure.md      ← migrated
   context-budget.md        ← NEW
 
-.claude/skills/             ← ~25 SKILL.md files across bi/ data/ dbt/ eval/ collect/ generic/
+.claude/skills/
+  SKILLS-CATALOG.md        ← NEW — lookup index + hybrid resolution registry
+  <category>/<name>/SKILL.md   ← ~28 skill files across bi/ data/ dbt/ eval/ collect/ generic/
 ```
+
+**Collector preserves all artifact file structures unchanged.** The user-facing behavior of `/admin_resource` is preserved exactly:
+
+| Preserved (no change) | Notes |
+|---|---|
+| `artifacts/CATALOG.md` | Master artifact index |
+| `artifacts/CHANGELOG.md` | Artifact evolution log |
+| `artifacts/.source-registry.md` | MCP server → source_type registry |
+| `artifacts/versions/` | Archived prior versions |
+| `artifacts/ROLLUP-current-state.md` | Rollup target |
+| `artifacts/{confluence,jira,teams-chat,meeting-transcript,ad-hoc}/` | Source-typed artifact folders |
+| `/admin_resource {ingest, search, status, changelog, rebuild, rollup, update}` sub-commands | Identical behavior |
+
+Internally these are now produced by `collector` loading `collect/*` skills instead of `resource-*` agents.
 
 ### 2.3 Modify
 
@@ -419,17 +454,33 @@ Convert `bi-kpi-metric-definition.md` → `skills/bi/kpi-definition/SKILL.md`. B
 
 **Exit criteria:** A real BI KPI dictionary deliverable is produced through the new harness end-to-end. **Hard gate — if this doesn't feel right, stop and re-evaluate before Phase 4.**
 
-### Phase 4 — Migrate remaining BI + data skills (1 day)
+### Phase 4 — Migrate remaining BI + data skills + initial catalog (1 day)
 
-Convert remaining BI agent files into skills under `bi/`, `data/`, `generic/`. Build `playbooks/bi-dashboard.md` reproducing the current 14-step flow.
+- Convert remaining BI agent files into skills under `bi/`, `data/`, `generic/`.
+- Build `playbooks/bi-dashboard.md` reproducing the current 14-step flow.
+- **Build initial `.claude/skills/SKILLS-CATALOG.md`** with all BI + data + generic + eval skills indexed. Include the native skills section pre-populated with relevant Claude Code plugin skills (`anthropic-skills:*`, `engineering:*`, `atlassian:*`).
+- Add catalog maintenance protocol to `rules/` so every future skill change updates the catalog in the same commit.
 
-**Exit criteria:** `/bi_agent` and `/run bi-dashboard` produce identical results to the old harness on a benchmark request.
+**Exit criteria:**
+- `/run bi-dashboard <context>` produces equivalent output to the old `/bi_agent` on a benchmark request
+- `SKILLS-CATALOG.md` lists every skill that exists; generator can resolve any skill in one file read
+- Generator never has to glob `.claude/skills/**/SKILL.md`
 
 ### Phase 5 — Migrate Collector (½ day)
 
-Build `collector.md` agent + 6 ingestion skills. Rewire `/admin_resource`.
+- Build `collector.md` agent + ingestion skills under `collect/`.
+- Rewire `/admin_resource` sub-commands to route through `collector`.
+- Update `SKILLS-CATALOG.md` with the new collect skills.
+- **Verify all artifact file structures are byte-identical** to old harness output on a benchmark ingest:
+  - `artifacts/CATALOG.md`
+  - `artifacts/CHANGELOG.md`
+  - `artifacts/.source-registry.md`
+  - per-source-type folders
 
-**Exit criteria:** `/admin_resource ingest <url>` produces identical artifact output to the old harness.
+**Exit criteria:**
+- `/admin_resource ingest <url>` produces identical artifact output to the old harness
+- `/admin_resource update --check`, `--supersede`, `search`, `rebuild`, `rollup` all preserved
+- Catalog updated in same commit as skill creation
 
 ### Phase 6 — Build dbt playbook (½ day)
 
