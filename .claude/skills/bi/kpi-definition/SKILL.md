@@ -57,7 +57,14 @@ List all candidates before defining any of them.
 
 ### Step 3 — Define each KPI completely
 
-For every KPI, populate all fields in the KPI record (see template below). Do not leave fields blank — if unknown, write "TBD — open question #N" and record the open question in the ambiguity log.
+For every KPI, populate all fields in the KPI record (see template below). Every field must contain real content — **"TBD" alone is never acceptable, even when paired with an open question number**.
+
+When a field value is uncertain:
+1. Write your **best-available definition** based on the brief, domain knowledge, and reasonable assumptions
+2. Note what specifically remains uncertain as a numbered open question in the ambiguity log
+3. Add a parenthetical to the field value: e.g. `"Cohort attributed to trial_start_date month. Exact cutoff rule unconfirmed — see OQ-2."`
+
+The open question records *what is still unknown*. It does not substitute for field content. An evaluator will FAIL any field whose only content is "TBD" regardless of whether an OQ exists.
 
 **KPI record template:**
 
@@ -153,7 +160,7 @@ Run through this before writing the handoff block:
 
 - [ ] Every KPI from the requirement doc is present (none skipped)
 - [ ] Every KPI record has all 11 fields populated (no silent blanks)
-- [ ] Every "TBD" has a corresponding open question number in the ambiguity log
+- [ ] No field contains "TBD" as its only content — every field has a best-available definition; uncertainty is recorded in the OQ log, not used as a field value
 - [ ] Date logic is explicit for every KPI (no "as needed" or "standard period")
 - [ ] Source candidates are labelled "unconfirmed" (none presented as confirmed)
 - [ ] Metric type is assigned for every KPI using the 4-type classification
