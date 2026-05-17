@@ -113,3 +113,11 @@ compiled: true | false | not-verified
 - [ ] schema.yml has relationships test on every foreign key
 - [ ] dbt_target context applied (Cloud features only if cloud)
 - [ ] Compilation status noted (verified / not-verified)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

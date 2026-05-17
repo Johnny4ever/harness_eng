@@ -164,3 +164,11 @@ List any column that cannot be tested because:
 - [ ] Singular tests return violating rows only (never `count(*) = 0` style)
 - [ ] Untested columns section present with reasons
 - [ ] Test coverage summary table populated
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

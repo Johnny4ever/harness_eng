@@ -160,3 +160,11 @@ Columns where descriptions could not be completed because business meaning is un
 - [ ] KPI links (`meta.kpi`) populated for measure columns that drive KPIs
 - [ ] Known limitations section present in data dictionary for each table
 - [ ] Documentation gaps table present (even if empty)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

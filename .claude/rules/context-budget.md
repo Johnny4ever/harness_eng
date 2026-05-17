@@ -9,7 +9,8 @@ Each agent has a strict limit on how many files it may read per invocation. Thes
 | `collector` | 3 | `.source-registry.md` + 1 source content + `CATALOG.md` |
 | `planner` | 5 | `project-journal.md` (routing section only) + `synthesis.md` + up to 3 `must_reads` from prior handoff |
 | `generator` | 6 | `strategy.md` (step section only) + `sprint-contract-<cp>.md` + `SKILLS-CATALOG.md` + active skill `SKILL.md` + up to 2 `must_reads` from handoff |
-| `evaluator` | 4 | `sprint-contract-<cp>.md` + primary deliverable + eval skill `SKILL.md` + prior verdict (if rework) |
+| `evaluator` | 4 | `sprint-contract-<cp>.md` + primary deliverable + eval skill `SKILL.md` + prior verdict (if rework). On grading completion, evaluator also performs an append-only write to one `SKILL.metrics.md` — this is a write, not a read, and not counted in the budget. |
+| `meta-learner` | 12 | `SKILL.metrics.md` files (front-matter scan is 0.25/file) + retrospectives + `project-journal.md` routing sections + `docs/meta/rejected/` + existing `.claude/lessons/*.md`. See `proposal-protocol.md` and `skill-metrics-protocol.md` for read ordering. |
 
 Reading beyond these limits is a harness failure. If an agent believes it needs more files, it should:
 1. Check if the handoff block's `must_reads` can be trimmed (indicates coupling upstream)

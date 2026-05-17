@@ -9,6 +9,14 @@ docs/
   .cache-manifest.md              ← planner: synthesis cache validity flag
   INDEX-by-project.md             ← planner: all projects + current status
   INDEX-by-type.md                ← planner: deliverables indexed by type
+  meta/                           ← meta-learner workspace (Phase 8)
+    README.md
+    proposals/
+      <YYYY-MM-DD>-<NNN>-<slug>.md   ← open proposals awaiting review
+      accepted/
+        <YYYY-MM-DD>-<NNN>-<slug>.md ← applied proposals (post-merge archive)
+    rejected/
+      <YYYY-MM-DD>-<NNN>-<slug>.md   ← rejected proposals with reasoning
   projects/
     <slug>/
       project-journal.md          ← planner: canonical project state (read this first)

@@ -94,3 +94,11 @@ created: <date>
 - [ ] Section 4 shows lineage for every KPI (not just some)
 - [ ] Runbook has named contacts (not just "the team")
 - [ ] No technical jargon in Sections 1–3 that a business user would not understand
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

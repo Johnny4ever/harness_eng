@@ -92,3 +92,11 @@ created: <date>
 - [ ] Every blocking decision has an owner and a deadline
 - [ ] Conflicts section is present (even if empty — note "no conflicts identified")
 - [ ] Signoff table lists at least the primary stakeholder
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

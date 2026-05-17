@@ -89,3 +89,11 @@ Always follow the chain from oldest to newest to reconstruct history.
 - [ ] CHANGELOG.md has new `Superseded` row with reason
 - [ ] Artifact body of the superseded artifact was NOT modified
 - [ ] No artifact was deleted
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

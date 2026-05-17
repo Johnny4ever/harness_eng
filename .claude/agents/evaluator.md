@@ -46,6 +46,18 @@ Triggered by the harness loop **after** generator signals done.
 2. Read the primary deliverable(s) (up to 2 files — use handoff `must_reads`)
 3. Read prior verdict if this is a rework iteration (1 file, replaces a must_read)
 
+**After writing the verdict file**, perform one additional append-only write to record telemetry. This is required, not optional. See `rules/skill-metrics-protocol.md` for the schema:
+
+1. For each skill that produced a deliverable in this checkpoint (from the sprint contract's Deliverables table), open `.claude/skills/<category>/<skill>/SKILL.metrics.md`
+2. If the file does not exist or contains only the front-matter placeholder, initialise the table
+3. Append one row capturing this checkpoint's outcome:
+   - On PASS at iteration N: append `Verdict=PASS, Iter to PASS=N, Failed criteria=<arrow-separated list across iterations or "—" if first-pass>`
+   - On ESCALATED: append `Verdict=ESCALATED, Iter to PASS=—`
+4. Recompute the front-matter aggregates (`total_invocations`, `first_pass_pass_count`, `first_pass_pass_rate`, `avg_iterations_to_pass`, `escalation_count`, `last_updated`)
+5. If the log now exceeds 200 rows, perform the rollover described in `skill-metrics-protocol.md`
+
+The metrics write is a structured single-row append. Do not read prior rows beyond what is needed to recompute aggregates. This write is not counted in the 4-file read budget.
+
 For each criterion:
 - Find the specific content in the deliverable that satisfies or fails it
 - Record your evidence — quote the content or note its absence
@@ -141,6 +153,23 @@ The retrospective captures:
 - Criteria that consistently caused FAIL (signals the skill or contract needs improvement)
 - Skills that performed well vs. generated rework
 - Recommendations for improving the playbook, skill content, or contract templates
+
+**Active Learning Verification (Phase 8 addition):** For each skill used in this delivery, check its `SKILL.metrics.md` for any `Active Learning Tags`. For each active tag (a `learning_id` flagged for verification):
+
+- Compare the actual outcome of this delivery (verdict, iteration count, failed criteria) against the tag's expected outcome
+- Record one row in the retrospective's `Active Learning Verification` section:
+
+```markdown
+## Active Learning Verification
+| learning_id | Skill | Expected outcome | Observed in this delivery | Verdict |
+|---|---|---|---|---|
+| L-007 | bi/kpi-definition | C2 first-pass FAIL <20% | C2 passed first-pass | confirmed |
+| L-009 | data/discovery | Avg iter ≤ 1.3 | Took 2 iterations | not yet confirmed |
+```
+
+Verdicts: `confirmed` (matched expectation) | `not yet confirmed` (mixed signal, need more data) | `contradicted` (worse than baseline)
+
+This section is the regression-guard signal the meta-learner reads on its next `/meta-learn` run.
 
 ## Skepticism Protocol
 

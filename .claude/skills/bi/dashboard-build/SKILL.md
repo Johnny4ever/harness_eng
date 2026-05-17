@@ -116,3 +116,11 @@ Refresh schedule: <per requirement>
 - [ ] Connection type and refresh schedule specified
 - [ ] Tooltip specified for every chart
 - [ ] Manual steps section present (even if empty)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

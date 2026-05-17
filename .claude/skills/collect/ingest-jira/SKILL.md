@@ -120,3 +120,11 @@ Example: `ART-20260517-003-checkout-flow-requirements-epic.md`
 - [ ] Issues Covered table present with status column
 - [ ] `must_read` is true only for artifacts with core acceptance criteria
 - [ ] File written to `artifacts/jira/` (not any other folder)
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

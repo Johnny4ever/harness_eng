@@ -95,3 +95,11 @@ Suggestions:
 - [ ] Superseded artifacts flagged with ⚠️ and superseding artifact referenced
 - [ ] Artifact path included in every result row
 - [ ] No results message includes actionable suggestions
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->

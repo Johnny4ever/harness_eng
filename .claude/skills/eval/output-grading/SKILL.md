@@ -104,6 +104,38 @@ failing_criteria: []   # list criterion IDs that failed, empty if PASS
 - PASS: mark the step as `✅ COMPLETE` with checkpoint and iteration
 - FAIL: mark the step as `🔄 IN PROGRESS` (rework pending), update iteration count
 
+### Step 7 — Append to SKILL.metrics.md (PASS or ESCALATED only)
+
+Skip this step on a FAIL that is not yet at the iteration cap — only the final outcome of a checkpoint is recorded.
+
+For each skill listed in the sprint contract's Deliverables table that produced output for this checkpoint:
+
+1. Open `.claude/skills/<category>/<skill>/SKILL.metrics.md`. If the front-matter exists but the log is empty (the Phase 8.1 placeholder), populate the first row. If the file does not exist at all, create it with the front-matter from `rules/skill-metrics-protocol.md`.
+
+2. Append one row to the `## Per-Invocation Log` table:
+
+| Column | Value |
+|---|---|
+| Date | Today (YYYY-MM-DD) |
+| Project | Project slug from STATUS.md |
+| Checkpoint | The checkpoint id (e.g. `cp1`) |
+| Verdict | `PASS` or `ESCALATED` |
+| Iter to PASS | Iteration number that finally passed; `—` on ESCALATED |
+| Failed criteria | Arrow-separated history (e.g. `C2,C3 → C2 → —` means iter 1 failed C2+C3, iter 2 failed C2, iter 3 passed). `—` if first-pass PASS |
+| Notes | 1-line summary; cite active `learning_id` if applicable |
+
+3. Recompute and update the front-matter aggregates:
+   - `total_invocations` = count of log rows
+   - `first_pass_pass_count` = rows where Iter to PASS = 1
+   - `first_pass_pass_rate` = first_pass_pass_count / total_invocations (2 decimal places)
+   - `avg_iterations_to_pass` = mean of "Iter to PASS" across PASS rows only (1 decimal place)
+   - `escalation_count` = rows where Verdict = ESCALATED
+   - `last_updated` = today
+
+4. If the log now exceeds 200 rows, perform rollover per `rules/skill-metrics-protocol.md`.
+
+This append is structured and atomic. Do not edit the rest of the file. Do not delete any rows.
+
 ## Anti-Patterns to Avoid
 
 | Anti-pattern | What to do instead |
@@ -113,3 +145,11 @@ failing_criteria: []   # list criterion IDs that failed, empty if PASS
 | "I'll give partial credit since 4 of 5 KPIs are mapped" | FAIL. The criterion says all KPIs. Feedback: "KPI `churn_rate` has no source mapping." |
 | "The criterion is vague so I'll interpret generously" | Apply the stricter interpretation. Flag the vague criterion in the retrospective. |
 | Praising what passed before noting what failed | Lead with the overall verdict. Evidence for all criteria. No softening. |
+
+## Lessons Learned
+
+<!--
+Append one bullet per lesson. Newest at the top. See `rules/lessons-learned-protocol.md`.
+Format:
+- **<YYYY-MM-DD> — <short title>.** Trigger: <project + failure pattern>. Change: <what changed>. learning_id: L-NNN
+-->
